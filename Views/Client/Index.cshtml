@@ -1,0 +1,140 @@
+﻿
+@{
+    ViewBag.Title = "View";
+}
+
+<h2>Bookings</h2>
+<table id="table" class="table">
+    <tr>
+        <th>ID</th>
+        <th>Reservation code</th>
+        <th>Creation date</th>
+        <th>Check-in date</th>
+        <th>Check-out date</th>
+        <th>Price</th>
+        <th>Currency</th>
+        <th>Commission</th>
+        <th>Source</th>
+        <th>Guests</th>
+    </tr>
+</table>
+
+<button id="btnDelBookings" class="btn">Drop all bookings</button>
+<button id="btnPiotr" class="btn">Delete Piotr</button>
+
+<div class="container">
+    <h2>Registration</h2>
+
+        <label>Reservation code</label>
+        <input type="text" id="ReservationCodeInput" placeholder="gt4d4lo8h0" />
+
+        <label>Creation date</label>
+        <input class="datefield" data-val="true" data-val-required="Date is required"
+               id="CreationDateInput" name="ReleaseDate" type="date" />
+
+        <label>Check-in date</label>
+        <input class="datefield" data-val="true" data-val-required="Date is required"
+               id="CheckInDateInput" name="ReleaseDate" type="date" />
+
+        <label>CheckOutDate</label>
+        <input class="datefield" data-val="true" data-val-required="Date is required"
+               id="CheckOutDateInput" name="ReleaseDate" type="date" />
+
+        <label>Price</label>
+        <input type="text" id="PriceInput" placeholder="350" />
+
+        <label>Currency</label>
+        <input type="text" id="CurrencyInput" placeholder="PLN" />
+
+        <label>Commission</label>
+        <input type="text" id="CommissionInput" placeholder="" />
+
+        <label>Source</label>
+        <input type="text" id="SourceInput" placeholder="" />
+        <div id="GuestsList"></div>
+
+        <button id="btnAddBooking" class="btn">Add Booking</button>
+
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        var baseUrl = "https://localhost:44383/";
+        var bookingData = [];
+        var gueststData = [];
+        $.get(baseUrl + 'api/Guest', function (data) {
+            gueststData = data;
+            console.log(gueststData);   
+
+            var labels = "";
+            for (var i = 0; i < gueststData.length; i++) {
+                labels += '<input type="checkbox" id="' + gueststData[i].ID + '" name="scales">' +
+                    '<label>' + gueststData[i].Name + ' ' + gueststData[i].Surname + '</label>'
+            }
+           $('#GuestsList').append(labels);
+        });
+        $.get(baseUrl + 'api/GuestBooking', function (data) {
+            bookingData = data;
+            console.log(bookingData);
+            for (var i = 0; i < bookingData.length; i++) {
+                var row = '<tr>' +
+                    '<td>' + bookingData[i].ID + '</td>' +
+                    '<td>' + bookingData[i].ReservationCode + '</td>' +
+                    '<td>' + bookingData[i].CreationDate + '</td>' +
+                    '<td>' + bookingData[i].CheckInDate + '</td>' +
+                    '<td>' + bookingData[i].CheckOutDate + '</td>' +
+                    '<td>' + bookingData[i].Price + '</td>' +
+                    '<td>' + bookingData[i].Currency + '</td>' +
+                    '<td>' + bookingData[i].Commission + '</td>' +
+                    '<td>' + bookingData[i].Source + '</td>' +
+                    '<td> <table class="table">';
+
+                for (var j = 0; j < bookingData[i].GuestBookings.length; j++) {
+                    var guest = bookingData[i].GuestBookings[j].Guest;
+                    row += '<tr><tr>' +
+                        guest.Name + ' ' +
+                        guest.Surname +
+                        ', </tr></tr>';
+                }
+
+                row += '</table></td></tr>';
+                $('#table').append(row);
+            }
+        });
+        
+        $('#btnDelBookings').click(function () {
+            $.ajax({
+                url: baseUrl + 'api/GuestBooking',
+                type: 'DELETE'
+            });
+            window.location.reload();
+        });
+        $('#btnPiotr').click(function () {
+            $.ajax({
+                url: baseUrl + 'api/Guest',
+                type: 'DELETE'
+            });
+            window.location.reload();
+        });
+        $('#btnAddBooking').click(function () {
+            var booking = {
+                ReservationCode: $('#ReservationCodeInput').val(),
+                CreationDate: $('#CreationDateInput').val(),
+                CheckInDate: $('#CheckInDateInput').val(),
+                CheckOutDate: $('#CheckOutDateInput').val(),
+                Price: $('#PriceInput').val(),
+                Currency: $('#CurrencyInput').val(),
+                Commission: $('#CommissionInput').val(),
+                Source: $('#SourceInput').val()
+            }
+            console.log(booking);
+            $.ajax({
+                type: "POST",
+                url: baseUrl + 'api/GuestBooking',
+                data: JSON.stringify(booking),
+                contentType:"application/json"
+            });
+            window.location.reload();
+        });
+    });
+</script>
+
